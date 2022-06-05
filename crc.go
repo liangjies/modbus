@@ -1,8 +1,8 @@
-// Copyright 2014 Quoc-Viet Nguyen. All rights reserved.
-// This software may be modified and distributed under the terms
-// of the BSD license. See the LICENSE file for details.
+// ModBus CRC16校验算法
 
 package modbus
+
+// import "fmt"
 
 // Table of CRC values for high–order byte
 var crcHighBytes = []byte{
@@ -50,15 +50,39 @@ type crc struct {
 	low  byte
 }
 
+// 初始化
 func (crc *crc) reset() *crc {
 	crc.high = 0xFF
 	crc.low = 0xFF
 	return crc
 }
 
+// 初始化
+func reset(crc *crc) {
+	crc.high = 0xFF
+	crc.low = 0xFF
+}
+func pushBytes(crc *crc, bs []byte) {
+	var idx, b byte
+	for _, b = range bs {
+		idx = crc.low ^ b
+		crc.low = crc.high ^ crcHighBytes[idx]
+		crc.high = crcLowBytes[idx]
+	}
+}
+func value(crc *crc) uint16 {
+	return uint16(crc.high)<<8 | uint16(crc.low)
+}
+
+//1．设置CRC寄存器，并给其赋值FFFF(hex)。
+//2．将数据的第一个8-bit字符与16位CRC寄存器的低8位进行异或，并把结果存入CRC寄存器。
+//3．CRC寄存器向右移一位，MSB补零，移出并检查LSB。
+//4．如果LSB为0，重复第三步；若LSB为1，CRC寄存器与多项式码相异或。
+//5．重复第3与第4步直到8次移位全部完成。此时一个8-bit数据处理完毕。
+//6．重复第2至第5步直到所有数据全部处理完成。
+//7．最终CRC寄存器的内容即为CRC值。
 func (crc *crc) pushBytes(bs []byte) *crc {
 	var idx, b byte
-
 	for _, b = range bs {
 		idx = crc.low ^ b
 		crc.low = crc.high ^ crcHighBytes[idx]

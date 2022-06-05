@@ -10,10 +10,11 @@ import (
 
 func TestCRC(t *testing.T) {
 	var crc crc
-	crc.reset()
-	crc.pushBytes([]byte{0x02, 0x07})
-
-	if 0x1241 != crc.value() {
+	reset(&crc)
+	pushBytes(&crc, []byte{0x02, 0x07})
+	//crc.reset()
+	//crc.pushBytes([]byte{0x02, 0x07})
+	if 0x1241 != value(&crc) {
 		t.Fatalf("crc expected %v, actual %v", 0x1241, crc.value())
 	}
 }
