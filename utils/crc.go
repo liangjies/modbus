@@ -1,6 +1,6 @@
 // ModBus CRC16校验算法
 
-package modbus
+package utils
 
 // import "fmt"
 
@@ -45,13 +45,13 @@ var crcLowBytes = []byte{
 }
 
 // Cyclical Redundancy Checking
-type crc struct {
+type CRC struct {
 	high byte
 	low  byte
 }
 
 // 初始化
-func (crc *crc) reset() *crc {
+func (crc *CRC) Reset() *crc {
 	crc.high = 0xFF
 	crc.low = 0xFF
 	return crc
@@ -64,7 +64,7 @@ func (crc *crc) reset() *crc {
 //5．重复第3与第4步直到8次移位全部完成。此时一个8-bit数据处理完毕。
 //6．重复第2至第5步直到所有数据全部处理完成。
 //7．最终CRC寄存器的内容即为CRC值。
-func (crc *crc) pushBytes(bs []byte) *crc {
+func (crc *CRC) PushBytes(bs []byte) *CRC {
 	var idx, b byte
 	for _, b = range bs {
 		idx = crc.low ^ b
@@ -74,6 +74,6 @@ func (crc *crc) pushBytes(bs []byte) *crc {
 	return crc
 }
 
-func (crc *crc) value() uint16 {
+func (crc *CRC) Value() uint16 {
 	return uint16(crc.high)<<8 | uint16(crc.low)
 }

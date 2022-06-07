@@ -2,7 +2,9 @@ package modbus
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"modbus-spyder/utils"
 	"net"
 	"time"
 )
@@ -11,6 +13,8 @@ import (
 type TCPClientHandler struct {
 	// TCP 地址
 	Address string
+	// 从机地址
+	SlaveID byte
 	// 连接 & 读取超时
 	Timeout time.Duration
 	// 超过闲置时间关闭连接
@@ -28,6 +32,8 @@ const (
 	// 定义 TCP 连接的超时时间
 	tcpTimeout     = 10 * time.Second
 	tcpIdleTimeout = 60 * time.Second
+	// 数据包最大长度
+	tcpMaxLength = 60
 )
 
 // 新建 TCP 客户端
@@ -40,7 +46,7 @@ func NewTCPClientHandler(address string) *TCPClientHandler {
 }
 
 // 建立 TCP 连接
-func (mb *TCPClientHandler) connect() error {
+func (mb *TCPClientHandler) Connect() error {
 	if mb.conn == nil {
 		fmt.Println("connecting to", mb.Address)
 		dialer := net.Dialer{Timeout: mb.Timeout}
@@ -51,6 +57,49 @@ func (mb *TCPClientHandler) connect() error {
 		mb.conn = conn
 	}
 	return nil
+}
+
+// 接收数据
+// 以一个串口服务器来解析数据
+func (mb *TCPClientHandler) Receive() (err error) {
+	// 设置超时时间
+	var timeout time.Time
+	if mb.Timeout > 0 {
+		timeout = mb.lastActivity.Add(mb.Timeout)
+	}
+	if err = mb.conn.SetDeadline(timeout); err != nil {
+		return
+	}
+	// 定义一次读多少数据
+	var data [tcpMaxLength]byte
+	// 定义一个缓冲区
+	var buf []byte
+
+	if _, err = io.ReadFull(mb.conn, data[:tcpMaxLength]); err != nil {
+		return
+	}
+	// 数据存入缓冲区
+	buf = append(buf, data[:tcpMaxLength]...)
+	// 地址和功能码03可以确定
+	// 从缓冲数据里查找这两个数据
+	for i, v := range buf {
+		if v == 3 && i != 0 && buf[i-1] == mb.SlaveID {
+			// 数据包长度
+			dataLen := int(buf[i+1])
+			// 待校验数据长度不足，需要继续读取
+			if len(buf) < i+dataLen+4 {
+				break
+			}
+			// 获取buf中校验码
+
+			// CRC16校验数据是否有效
+			var crc utils.CRC
+			crc.Reset()
+			crc.PushBytes([]byte{0x02, 0x07})
+		}
+	}
+
+	return
 }
 
 /*
