@@ -57,23 +57,6 @@ func (crc *crc) reset() *crc {
 	return crc
 }
 
-// 初始化
-func reset(crc *crc) {
-	crc.high = 0xFF
-	crc.low = 0xFF
-}
-func pushBytes(crc *crc, bs []byte) {
-	var idx, b byte
-	for _, b = range bs {
-		idx = crc.low ^ b
-		crc.low = crc.high ^ crcHighBytes[idx]
-		crc.high = crcLowBytes[idx]
-	}
-}
-func value(crc *crc) uint16 {
-	return uint16(crc.high)<<8 | uint16(crc.low)
-}
-
 //1．设置CRC寄存器，并给其赋值FFFF(hex)。
 //2．将数据的第一个8-bit字符与16位CRC寄存器的低8位进行异或，并把结果存入CRC寄存器。
 //3．CRC寄存器向右移一位，MSB补零，移出并检查LSB。

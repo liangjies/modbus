@@ -4,6 +4,7 @@
 
 package modbus
 
+// Client 接口定义了 Modbus 客户端的接口。
 type Client interface {
 	// Bit access
 
