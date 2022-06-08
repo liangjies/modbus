@@ -2,6 +2,11 @@
 
 package utils
 
+import (
+	"bytes"
+	"encoding/binary"
+)
+
 // import "fmt"
 
 // Table of CRC values for high–order byte
@@ -51,7 +56,7 @@ type CRC struct {
 }
 
 // 初始化
-func (crc *CRC) Reset() *crc {
+func (crc *CRC) Reset() *CRC {
 	crc.high = 0xFF
 	crc.low = 0xFF
 	return crc
@@ -74,6 +79,8 @@ func (crc *CRC) PushBytes(bs []byte) *CRC {
 	return crc
 }
 
-func (crc *CRC) Value() uint16 {
-	return uint16(crc.high)<<8 | uint16(crc.low)
+func (crc *CRC) Value() []byte {
+	int16buf := new(bytes.Buffer)                                                    //构建int16 输出
+	binary.Write(int16buf, binary.LittleEndian, uint16(crc.high)<<8|uint16(crc.low)) //将int16  从小端转换为 byte数组
+	return int16buf.Bytes()
 }
