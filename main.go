@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"modbus-spyder/cmd"
+)
 
 func main() {
+	cmd.Execute()
 	fmt.Println("hello world")
 }
