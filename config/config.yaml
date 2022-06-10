@@ -1,7 +1,7 @@
 mysql:
   path: 127.0.0.1:3306
   config: charset=utf8mb4&parseTime=True&loc=Local
-  db-name: evernote
+  db-name: energymng
   username: evernote
   password: 3a7IIDMEQK16
   max-idle-conns: 0

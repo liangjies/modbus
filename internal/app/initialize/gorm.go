@@ -3,6 +3,7 @@ package initialize
 import (
 	"modbus-spyder/internal/app/global"
 	"modbus-spyder/internal/app/initialize/internal"
+	"modbus-spyder/internal/app/model"
 
 	"os"
 
@@ -12,6 +13,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 //@function: Gorm
@@ -25,7 +27,9 @@ func Gorm() *gorm.DB {
 //@description: 注册数据库表专用
 //@param: db *gorm.DB
 func MysqlTables(db *gorm.DB) {
-	err := db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate()
+	err := db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
+		&model.DeviceInfoEntity{},
+	)
 	if err != nil {
 		log.Println("register table failed")
 		os.Exit(0)
@@ -43,6 +47,7 @@ func GormMysql() *gorm.DB {
 		return nil
 	}
 	dsn := m.Username + ":" + m.Password + "@tcp(" + m.Path + ")/" + m.Dbname + "?" + m.Config
+
 	mysqlConfig := mysql.Config{
 		DSN:                       dsn,   // DSN data source name
 		DefaultStringSize:         191,   // string 类型字段的默认长度
@@ -69,7 +74,9 @@ func GormMysql() *gorm.DB {
 //@return: *gorm.Config
 
 func gormConfig() *gorm.Config {
-	config := &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true}
+	config := &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, NamingStrategy: schema.NamingStrategy{
+		SingularTable: true, // 是否使用单数表名
+	}}
 	switch global.SYS_CONFIG.Mysql.LogMode {
 	case "silent", "Silent":
 		config.Logger = internal.Default.LogMode(logger.Silent)

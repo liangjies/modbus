@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	SYS_DB     *gorm.DB
-	SYS_CONFIG config.Server
-	SYS_VIP    *viper.Viper
-	SYS_LOG    *zap.Logger
+	SYS_DB       *gorm.DB
+	SYS_CONFIG   config.Server
+	SYS_VIP      *viper.Viper
+	SYS_LOG      *zap.Logger
+	CollectPoint map[string]string
 )

@@ -4,6 +4,7 @@ import (
 	"log"
 	"modbus-spyder/internal/app/model"
 	"strconv"
+	"time"
 )
 
 // 数据解析模块
@@ -23,6 +24,7 @@ func MsgParsing(msg []byte, mb *TCPClientHandler) (datas []model.DeviceInfoEntit
 		// 北丰电表
 		datas = BeiFengParsing(msg)
 	} else {
+		log.Println("数据长度：", len(msg))
 		log.Println("数据长度错误，舍弃")
 	}
 
@@ -38,6 +40,8 @@ func BeiFengParsing(msg []byte) (datas []model.DeviceInfoEntity) {
 		data.I = float64(DataJointFour(msg, 5+14*i, 2)) / 100
 		data.E = float64(DataJointFour(msg, 9+14*i, 4)) / 100
 		data.PF = float64(DataJointFour(msg, 13+14*i, 2)) / 1000
+		data.Pts = time.Now()
+		data.Ts = time.Now()
 		datas = append(datas, data)
 	}
 	return
@@ -52,6 +56,8 @@ func HuaLiParsing(msg []byte, mb *TCPClientHandler) (datas []model.DeviceInfoEnt
 		data.I = float64(DataJointFour(msg, 9+2*i, 2)) / 1000
 		data.E = float64(DataJointFour(msg, 15+4*i, 4)) / 1000
 		data.PF = float64(DataJointFour(msg, 31+2*i, 2)) / 1000
+		data.Pts = time.Now()
+		data.Ts = time.Now()
 		datas = append(datas, data)
 	}
 	return

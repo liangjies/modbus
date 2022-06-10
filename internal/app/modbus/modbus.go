@@ -5,10 +5,30 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"modbus-spyder/internal/app/service"
 	"modbus-spyder/internal/app/utils"
 	"net"
 	"time"
 )
+
+func RunSpyder(addr string) {
+	for {
+		// 建立 TCP 连接
+		mb := NewTCPClientHandler("192.168.100.220:26")
+		err := mb.Connect()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			// 接收数据
+			if err = mb.Receive(); err != nil {
+				fmt.Println(err)
+			}
+			defer mb.conn.Close() // 关闭连接
+		}
+		// 等待10秒重连
+		time.Sleep(10 * time.Second)
+	}
+}
 
 // Client 接口定义了 Modbus 客户端的接口。
 type TCPClientHandler struct {
@@ -78,6 +98,16 @@ func (mb *TCPClientHandler) Receive() (err error) {
 	// 定义一个缓冲区
 	var buf []byte
 	for {
+		// 设置超时时间
+		mb.lastActivity = time.Now() // 设置上次活动时间
+		var timeout time.Time
+		if mb.Timeout > 0 {
+			timeout = mb.lastActivity.Add(mb.Timeout)
+		}
+		if err = mb.conn.SetDeadline(timeout); err != nil {
+			return
+		}
+		// 读取数据
 		if _, err = io.ReadFull(mb.conn, data[:tcpMaxLength]); err != nil {
 			return
 		}
@@ -103,20 +133,22 @@ func (mb *TCPClientHandler) Receive() (err error) {
 				// for _, v := range buf[i-1 : i+dataLen+2] {
 				// 	fmt.Printf("%02x ", v)
 				// }
-				fmt.Println("cucCheck:", checksum)
-				fmt.Println("crc.Value(): ", crc.Value())
 				if bytes.Equal(checksum, crc.Value()) {
 					// 校验成功，解析数据
 					mb.SlaveID = buf[i-1]
-					datas := MsgParsing(buf[i-1:i+dataLen+2], mb)
-					fmt.Println("datas:", datas)
-					return
+					datas := MsgParsing(buf[i-1:i+dataLen+4], mb)
+
+					service.PutData(datas)
+					//fmt.Println("datas:", datas)
+					buf = buf[i+dataLen+4:]
+					break
+					//return
 				} else {
 					continue
 				}
 			}
 		}
-		return
+		//return
 	}
 }
 
