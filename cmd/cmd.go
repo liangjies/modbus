@@ -3,8 +3,7 @@ package cmd
 import (
 	"modbus-spyder/internal/app/global"
 	"modbus-spyder/internal/app/initialize"
-	"modbus-spyder/internal/app/modbus"
-	"modbus-spyder/internal/app/timer"
+	"modbus-spyder/internal/app/spyder"
 )
 
 func Execute() {
@@ -19,8 +18,8 @@ func Execute() {
 	}
 	initialize.Global() // 初始化全局变量
 
-	timer.Timer()                             // 加载定时器
-	go modbus.RunSpyder("192.168.100.220:26") // 开启采集
+	// timer.Timer()                             // 加载定时器
+	go spyder.Spyder() // 开启采集
 	// 阻塞运行
 	ch := make(chan int, 1)
 	<-ch

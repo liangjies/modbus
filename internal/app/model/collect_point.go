@@ -1,6 +1,6 @@
 package model
 
-// MySQL数据库表
+// MySQL数据库表-设备电表
 type CollectPoint struct {
 	ID          uint   `gorm:"column:id"`
 	CollectCode string `gorm:"column:collect_code"` // 采集点编号

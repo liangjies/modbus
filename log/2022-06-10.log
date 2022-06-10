@@ -1,0 +1,22 @@
+[MODBUS]2022/06/10 - 17:03:59.615	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:03:59.618	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:05:07.612	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:05:07.616	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:06:56.615	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:06:56.618	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:07:29.155	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:07:29.159	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:11:34.278	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:11:34.282	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:16:04.489	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:16:04.493	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:17:13.792	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:17:13.795	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:18:28.600	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:18:28.604	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:19:28.610	[34minfo[0m	采集点发生变化，等待所有协程结束
+[MODBUS]2022/06/10 - 17:19:28.610	[34minfo[0m	采集点发生变化，协程全部结束
+[MODBUS]2022/06/10 - 17:19:28.610	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:21:17.747	[34minfo[0m	register table success
+[MODBUS]2022/06/10 - 17:21:17.750	[34minfo[0m	开始采集
+[MODBUS]2022/06/10 - 17:21:27.767	[34minfo[0m	采集点发生重连	{"addr": "172.200.16.180:26"}
