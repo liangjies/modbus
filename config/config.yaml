@@ -21,7 +21,7 @@ zap:
   log-in-console: true
 
 mongodb:
-  path: 127.0.0.1:3306
+  path: 127.0.0.1:27017
   db-name: iot
   username:
   password:

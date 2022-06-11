@@ -16,6 +16,9 @@ func Execute() {
 		db, _ := global.SYS_DB.DB()
 		defer db.Close()
 	}
+	// 初始化MongoDB连接
+	global.SYS_MONGODB = initialize.MongoDB() // gorm连接数据库
+
 	initialize.Global() // 初始化全局变量
 
 	// timer.Timer()                             // 加载定时器

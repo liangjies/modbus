@@ -36,10 +36,11 @@ func BeiFengParsing(msg []byte, mb *TCPClientHandler) (datas []model.DeviceInfoE
 	var data model.DeviceInfoEntity
 	for i := 0; i < 7; i++ {
 		data.IMEI = "i + 1"
-		data.U = float64(DataJointFour(msg, 3+14*i, 2)) / 100
-		data.I = float64(DataJointFour(msg, 5+14*i, 2)) / 100
-		data.E = float64(DataJointFour(msg, 9+14*i, 4)) / 100
-		data.PF = float64(DataJointFour(msg, 13+14*i, 2)) / 1000
+		data.U = float64(DataJointFour(msg, 3+14*i, 2)) / 100    // 电压
+		data.I = float64(DataJointFour(msg, 5+14*i, 2)) / 100    // 电流
+		data.E = float64(DataJointFour(msg, 9+14*i, 4)) / 100    // 电能
+		data.PF = float64(DataJointFour(msg, 13+14*i, 2)) / 1000 // 功率因数
+		data.P = float64(DataJointFour(msg, 7+14*i, 2))          // 有功功率
 		data.Pts = mb.lastSuccess
 		data.Ts = time.Now()
 		datas = append(datas, data)
@@ -52,10 +53,11 @@ func HuaLiParsing(msg []byte, mb *TCPClientHandler) (datas []model.DeviceInfoEnt
 	var data model.DeviceInfoEntity
 	for i := 0; i < 3; i++ {
 		data.IMEI = mb.Address + "|" + strconv.Itoa(int(mb.SlaveID)) + "|" + strconv.Itoa(i+1)
-		data.U = float64(DataJointFour(msg, 3+2*i, 2)) / 10
-		data.I = float64(DataJointFour(msg, 9+2*i, 2)) / 1000
-		data.E = float64(DataJointFour(msg, 15+4*i, 4)) / 1000
-		data.PF = float64(DataJointFour(msg, 31+2*i, 2)) / 1000
+		data.U = float64(DataJointFour(msg, 3+2*i, 2)) / 10     // 电压
+		data.I = float64(DataJointFour(msg, 9+2*i, 2)) / 1000   // 电流
+		data.E = float64(DataJointFour(msg, 15+4*i, 4)) / 1000  // 电能
+		data.PF = float64(DataJointFour(msg, 31+2*i, 2)) / 1000 // 功率因数
+		data.P = float64(DataJointFour(msg, 39+4*i, 4))         // 有功功率
 		data.Pts = mb.lastSuccess
 		data.Ts = time.Now()
 		datas = append(datas, data)

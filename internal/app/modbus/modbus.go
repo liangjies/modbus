@@ -138,16 +138,17 @@ func (mb *TCPClientHandler) Receive(ctx context.Context) (err error) {
 				var crc utils.CRC
 				crc.Reset()
 				crc.PushBytes(buf[i-1 : i+dataLen+2])
-				// for _, v := range buf[i-1 : i+dataLen+2] {
-				// 	fmt.Printf("%02x ", v)
-				// }
 				if bytes.Equal(checksum, crc.Value()) {
 					// 校验成功，解析数据
 					mb.SlaveID = buf[i-1]
 					datas := MsgParsing(buf[i-1:i+dataLen+4], mb)
-					if service.PutData(datas) {
+					// if service.PutData(datas) {
+					// 	mb.lastSuccess = time.Now()
+					// }
+					if service.PutDataInMongoDB(datas) {
 						mb.lastSuccess = time.Now()
 					}
+
 					//fmt.Println("datas:", datas)
 					buf = buf[i+dataLen+4:]
 					break
@@ -157,6 +158,11 @@ func (mb *TCPClientHandler) Receive(ctx context.Context) (err error) {
 
 			}
 		}
+		// 检测数据长度,长度超长释放
+		if len(buf) > 250 {
+			buf = []byte{}
+		}
+
 		// 设置超时时间
 		mb.lastActivity = time.Now() // 设置上次活动时间
 		var timeout time.Time
