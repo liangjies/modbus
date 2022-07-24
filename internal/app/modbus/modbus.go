@@ -41,7 +41,35 @@ func RunSpyder(addr string, ctx context.Context, wg *sync.WaitGroup) {
 		// 等待10秒重连
 		time.Sleep(10 * time.Second)
 	}
+}
 
+func SendSpyder(addr string, meterType string, ctx context.Context, wg *sync.WaitGroup) {
+	for {
+		// 建立 TCP 连接
+		mb := NewTCPClientHandler(addr)
+		err := mb.Connect()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			// 发送数据包
+			aduRequest := MsgSendGroup()
+			// 发送数据
+			if err = mb.Receive(ctx); err != nil {
+				fmt.Println(err)
+			}
+			defer mb.conn.Close() // 关闭连接
+		}
+		// 结束协程
+		select {
+		case <-ctx.Done(): //等待通知
+			wg.Done() // 协程计数器减1
+			return
+		default:
+		}
+		global.SYS_LOG.Info("采集点发生重连", zap.Any("addr", addr))
+		// 等待10秒重连
+		time.Sleep(10 * time.Second)
+	}
 }
 
 // Client 接口定义了 Modbus 客户端的接口。
@@ -181,42 +209,22 @@ func (mb *TCPClientHandler) Receive(ctx context.Context) (err error) {
 	}
 }
 
-/*
 // 发送数据
-func (mb *tcpTransporter) Send(aduRequest []byte) (aduResponse []byte, err error) {
+func (mb *TCPClientHandler) Send(aduRequest []byte) (err error) {
 	// 如果连接不存在，则建立连接
-	if err = mb.connect(); err != nil {
-		return
+	if mb.conn == nil {
+		fmt.Println("connecting to", mb.Address)
+		dialer := net.Dialer{Timeout: mb.Timeout}
+		conn, err := dialer.Dial("tcp", mb.Address)
+		if err != nil {
+			return err
+		}
+		mb.conn = conn
 	}
 	// 发送数据
 	log.Println("modbus: sending % x", aduRequest)
 	if _, err = mb.conn.Write(aduRequest); err != nil {
 		return
 	}
-	// Read header first
-	var data [tcpMaxLength]byte
-	if _, err = io.ReadFull(mb.conn, data[:tcpHeaderSize]); err != nil {
-		return
-	}
-	// Read length, ignore transaction & protocol id (4 bytes)
-	length := int(binary.BigEndian.Uint16(data[4:]))
-	if length <= 0 {
-		mb.flush(data[:])
-		err = fmt.Errorf("modbus: length in response header '%v' must not be zero", length)
-		return
-	}
-	if length > (tcpMaxLength - (tcpHeaderSize - 1)) {
-		mb.flush(data[:])
-		err = fmt.Errorf("modbus: length in response header '%v' must not greater than '%v'", length, tcpMaxLength-tcpHeaderSize+1)
-		return
-	}
-	// Skip unit id
-	length += tcpHeaderSize - 1
-	if _, err = io.ReadFull(mb.conn, data[tcpHeaderSize:length]); err != nil {
-		return
-	}
-	aduResponse = data[:length]
-	mb.logf("modbus: received % x\n", aduResponse)
 	return
 }
-*/

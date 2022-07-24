@@ -27,7 +27,6 @@ func Spyder() {
 		// 获取串口服务器地址
 		GetPointServer()
 		global.SYS_LOG.Info("开始采集")
-		// fmt.Println("global.CollectPoint:", global.CollectPoint)
 		fmt.Println("PointServer", PointServer)
 		for _, pointServer := range PointServer {
 			wg.Add(1)
