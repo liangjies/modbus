@@ -7,4 +7,6 @@ type Server struct {
 	Mysql Mysql `mapstructure:"mysql" json:"mysql" yaml:"mysql"`
 	// MongoDB
 	MongoDB MongoDB `mapstructure:"mongodb" json:"mongodb" yaml:"mongodb"`
+	// 系统配置
+	System System `mapstructure:"system" json:"system" yaml:"system"`
 }

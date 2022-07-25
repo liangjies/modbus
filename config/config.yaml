@@ -26,3 +26,10 @@ mongodb:
   username:
   password:
   max-pool-size: 5
+
+# system configuration
+system:
+  db-type: 'mysql' # 'mongodb' or 'kafka'
+  only-read: false     # 是否只读
+  interval: 500       # 采集间隔时间
+

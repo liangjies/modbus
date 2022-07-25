@@ -12,10 +12,12 @@ import (
 func GetCollectPoint(chReload chan bool) {
 	// 将采集点信息放入缓存中
 	temp := make(map[string]string)
+	typeTemp := make(map[string]string)
 	// 设备采集点信息
 	if err, points := GetCollectPointByEquipment(); err == nil {
 		for _, v := range points {
 			temp[v.CollectCode] = v.MeterType
+			typeTemp[v.CollectCode] = "equip"
 		}
 	} else {
 		global.SYS_LOG.Error("定时从MySQL数据库中获取设备采集点信息执行失败", zap.Any("err", err))
@@ -28,6 +30,7 @@ func GetCollectPoint(chReload chan bool) {
 			// 三相采集点
 			for i := 1; i <= 3; i++ {
 				temp[v.CollectCode[:len(v.CollectCode)-1]+strconv.Itoa(i)] = "华立"
+				typeTemp[v.CollectCode[:len(v.CollectCode)-1]+strconv.Itoa(i)] = "meter"
 			}
 		}
 	} else {
@@ -40,6 +43,7 @@ func GetCollectPoint(chReload chan bool) {
 		mutex.Lock()
 		// 将采集点信息放入全局变量中
 		global.CollectPoint = temp
+		global.CollectType = typeTemp
 		mutex.Unlock()
 		// 发送通知
 		chReload <- true

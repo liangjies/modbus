@@ -15,5 +15,6 @@ var (
 	SYS_CONFIG   config.Server
 	SYS_VIP      *viper.Viper
 	SYS_LOG      *zap.Logger
-	CollectPoint map[string]string
+	CollectPoint map[string]string // 采集点电表类型
+	CollectType  map[string]string // 采集设备类型
 )

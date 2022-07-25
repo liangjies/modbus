@@ -10,6 +10,8 @@ import (
 	"modbus-spyder/internal/app/service"
 	"modbus-spyder/internal/app/utils"
 	"net"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,6 +19,7 @@ import (
 )
 
 func RunSpyder(addr string, ctx context.Context, wg *sync.WaitGroup) {
+	addr = strings.Split(addr, "|")[0]
 	for {
 		// 建立 TCP 连接
 		mb := NewTCPClientHandler(addr)
@@ -43,18 +46,21 @@ func RunSpyder(addr string, ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func SendSpyder(addr string, meterType string, ctx context.Context, wg *sync.WaitGroup) {
+func SendSpyder(addr string, ctx context.Context, wg *sync.WaitGroup) {
+	imei := addr
+	addr = strings.Split(addr, "|")[0]
+	slaveID, _ := strconv.ParseUint(strings.Split(addr, "|")[1], 10, 8)
 	for {
 		// 建立 TCP 连接
 		mb := NewTCPClientHandler(addr)
+		mb.SlaveID = byte(slaveID)
+		mb.IMEI = imei
 		err := mb.Connect()
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			// 发送数据包
-			aduRequest := MsgSendGroup()
-			// 发送数据
-			if err = mb.Receive(ctx); err != nil {
+			// 发送数据--阻塞运行
+			if err = mb.Send(ctx); err != nil {
 				fmt.Println(err)
 			}
 			defer mb.conn.Close() // 关闭连接
@@ -78,6 +84,8 @@ type TCPClientHandler struct {
 	Address string
 	// 从机地址
 	SlaveID byte
+	// IMEI
+	IMEI string
 	// 连接 & 读取超时
 	Timeout time.Duration
 	// 超过闲置时间关闭连接
@@ -129,7 +137,6 @@ func (mb *TCPClientHandler) Connect() error {
 // 接收数据
 // 以一个串口服务器来解析数据
 func (mb *TCPClientHandler) Receive(ctx context.Context) (err error) {
-
 	// 设置超时时间
 	mb.lastActivity = time.Now() // 设置上次活动时间
 	var timeout time.Time
@@ -210,7 +217,26 @@ func (mb *TCPClientHandler) Receive(ctx context.Context) (err error) {
 }
 
 // 发送数据
-func (mb *TCPClientHandler) Send(aduRequest []byte) (err error) {
+func (mb *TCPClientHandler) Send(ctx context.Context) (err error) {
+	// 设置超时时间
+	mb.lastActivity = time.Now() // 设置上次活动时间
+	var timeout time.Time
+	if mb.Timeout > 0 {
+		timeout = mb.lastActivity.Add(mb.Timeout)
+	}
+	if err = mb.conn.SetDeadline(timeout); err != nil {
+		return
+	}
+	// 采集时间间隔
+	interval := global.SYS_CONFIG.System.Interval
+	// 获取电表类型
+	var meterType string
+	for i := 1; i <= 8; i++ {
+		if types, ok := global.CollectPoint[mb.IMEI]; ok {
+			meterType = types
+			break
+		}
+	}
 	// 如果连接不存在，则建立连接
 	if mb.conn == nil {
 		fmt.Println("connecting to", mb.Address)
@@ -221,10 +247,33 @@ func (mb *TCPClientHandler) Send(aduRequest []byte) (err error) {
 		}
 		mb.conn = conn
 	}
-	// 发送数据
-	log.Println("modbus: sending % x", aduRequest)
-	if _, err = mb.conn.Write(aduRequest); err != nil {
-		return
+	// 获取发送数据包
+	aduRequest := MsgSendGroup(mb.SlaveID, meterType)
+	for {
+		// 发送间隔
+		time.Sleep(time.Millisecond * time.Duration(interval))
+		// 发送数据
+		if _, err = mb.conn.Write(aduRequest); err != nil {
+			global.SYS_LOG.Error("发送数据失败：", zap.Any("err", err))
+			continue
+		}
+
+		// 设置超时时间
+		mb.lastActivity = time.Now() // 设置上次活动时间
+		var timeout time.Time
+		if mb.Timeout > 0 {
+			timeout = mb.lastActivity.Add(mb.Timeout)
+		}
+		if err = mb.conn.SetDeadline(timeout); err != nil {
+			return
+		}
+		// 检测是否需要关闭协程
+		select {
+		case <-ctx.Done(): //等待通知
+			return
+		default:
+		}
 	}
+
 	return
 }

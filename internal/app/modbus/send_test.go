@@ -7,5 +7,5 @@ func TestSend(t *testing.T) {
 	// BeiFengMsgSend("1")
 	// 华立电表
 	// HuaLiMsgSend("1")
-	HuaLiMsgSend("03")
+	HuaLiMsgSend("47")
 }

@@ -3,7 +3,7 @@ package modbus
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
+	"modbus-spyder/internal/app/utils"
 )
 
 // 数据解析模块
@@ -13,36 +13,53 @@ import (
 
 // 先判断是哪种电表
 // 再进行解析
-func MsgSendGroup(addr string, meterType string) (aduRequest []byte) {
+func MsgSendGroup(SlaveID byte, meterType string) (aduRequest []byte) {
+	switch meterType {
+	case "北丰":
+		aduRequest = BeiFengMsgSend(SlaveID)
+	case "华立":
+		aduRequest = HuaLiMsgSend(SlaveID)
+	}
 	return
 }
 
 // 北丰电表
-func BeiFengMsgSend(addr string) {
-	startReg := 64   // 起始寄存器
-	readLength := 53 // 读取长度
-	_ = startReg
-	_ = readLength
+func BeiFengMsgSend(SlaveID byte) (aduRequest []byte) {
+	startReg := 64           // 起始寄存器
+	readLength := 53         // 读取长度
+	var operate uint8 = 0x03 // 读取操作
+
+	buf := bytes.NewBuffer(make([]byte, 0))
+	binary.Write(buf, binary.BigEndian, SlaveID)
+	binary.Write(buf, binary.BigEndian, operate)
+	binary.Write(buf, binary.BigEndian, startReg)
+	binary.Write(buf, binary.BigEndian, readLength)
+	// CRC16校验
+	var crc utils.CRC
+	crc.Reset()
+	crc.PushBytes(buf.Bytes())
+	binary.Write(buf, binary.BigEndian, crc.Value())
+	aduRequest = buf.Bytes()
 	return
 }
 
 // 华立电表
-func HuaLiMsgSend(addr string) (aduRequest []byte) {
-	// startReg := 0    // 起始寄存器
-	// readLength := 35 // 读取长度
-	// operate := 0x03  // 读取操作
+func HuaLiMsgSend(SlaveID byte) (aduRequest []byte) {
+	var startReg uint16 = 0x00 // 起始寄存器
+	var readLength uint16 = 35 // 读取长度
+	var operate uint8 = 0x03   // 读取操作
 
-	// addrInt, _ := strconv.ParseUint(addr, 10, 64)
-	// var address = make([]byte, 8)
-	// binary.BigEndian.PutUint64(address, addrInt)
-	// binary.LittleEndian.PutUint64(address, addrInt)
-	// binary.LittleEndian.PutUint64(address, addrInt)
 	buf := bytes.NewBuffer(make([]byte, 0))
-	binary.Write(buf, binary.BigEndian, uint8(35))
-	binary.Write(buf, binary.BigEndian, uint8(87))
-	binary.Write(buf, binary.BigEndian, uint8(14))
-	binary.Write(buf, binary.BigEndian, uint8(254))
+	binary.Write(buf, binary.BigEndian, SlaveID)
+	binary.Write(buf, binary.BigEndian, operate)
+	binary.Write(buf, binary.BigEndian, startReg)
+	binary.Write(buf, binary.BigEndian, readLength)
+	// CRC16校验
+	var crc utils.CRC
+	crc.Reset()
+	crc.PushBytes(buf.Bytes())
+	binary.Write(buf, binary.BigEndian, crc.Value())
 	aduRequest = buf.Bytes()
-	fmt.Println(aduRequest)
+	// fmt.Println(aduRequest)
 	return
 }
