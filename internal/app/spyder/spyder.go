@@ -38,7 +38,7 @@ func Spyder() {
 		if !global.SYS_CONFIG.System.ReadOnly {
 			for _, pointServer := range PointServer {
 				wgSend.Add(1)
-				go modbus.SendSpyder(pointServer, "", ctx, &wgSend)
+				go modbus.SendSpyder(pointServer, ctx, &wgSend)
 			}
 		}
 		<-chReload // 采集点不发生变化这里一直阻塞
