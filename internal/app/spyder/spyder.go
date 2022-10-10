@@ -43,9 +43,9 @@ func Spyder() {
 		}
 		<-chReload // 采集点不发生变化这里一直阻塞
 		global.SYS_LOG.Info("采集点发生变化，等待所有协程结束")
+		cancel()
 		wg.Wait()     // 等待所有协程结束
 		wgSend.Wait() // 等待所有协程结束
-		cancel()
 		global.SYS_LOG.Info("采集点发生变化，协程全部结束")
 	}
 }
