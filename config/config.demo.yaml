@@ -1,0 +1,35 @@
+mysql:
+  path: 127.0.0.1:3306
+  config: charset=utf8mb4&parseTime=True&loc=Local
+  db-name: energymng
+  username: energymng
+  password: 3a7IIDMEQK16
+  max-idle-conns: 0
+  max-open-conns: 0
+  log-mode: 'info'
+  log-zap: false
+
+zap:
+  level: info
+  format: console
+  prefix: '[MODBUS]'
+  director: log
+  link-name: latest_log
+  showLine: true
+  encode-level: LowercaseColorLevelEncoder
+  stacktrace-key: stacktrace
+  log-in-console: true
+
+mongodb:
+  path: 127.0.0.1:27017
+  db-name: iot
+  username:
+  password:
+  max-pool-size: 5
+
+# system configuration
+system:
+  db-type: 'mysql' # 'mongodb' or 'kafka'
+  only-read: false     # 是否只读
+  interval: 500       # 采集间隔时间
+
